@@ -51,17 +51,18 @@ gpu_count = torch.cuda.device_count()
 print("gpu_count=",gpu_count)
 
 # 读取图片——ms4
-ms4_tif = TIFF.open('/home/gpu/Experiment/Remote data/image6/ms4.tif', mode='r')
+# datapath present the path of the data
+ms4_tif = TIFF.open('datapath/ms4.tif', mode='r')
 ms4_np = ms4_tif.read_image()
 print('原始ms4图的形状：', np.shape(ms4_np))
-pan_tif = TIFF.open('/home/gpu/Experiment/Remote data/image6/pan.tif', mode='r')
+pan_tif = TIFF.open('datapath/pan.tif', mode='r')
 pan_np = pan_tif.read_image()
 print('原始pan图的形状：', np.shape(pan_np))
 pan_np =split(pan_np,2)
 pan_np=np.transpose(pan_np,(1,2,0))
 pan_np= cv2.pyrDown(pan_np)
 print('2-split后pan图的形状：',np.shape(pan_np))
-label_np = loadmat("/home/gpu/Experiment/Remote data/image6/label.mat")
+label_np = loadmat("datapath/label.mat")
 label_np=label_np['label']
 print('label数组形状：', np.shape(label_np))
 
@@ -105,14 +106,12 @@ ground_xy = np.array([[]] * Categories_Number).tolist()   # [[],[],[],[],[],[],[
 ground_xy_allData = np.arange(label_row * label_column * 2).reshape(label_row * label_column, 2)  # [800*830, 2] 二维数组
 
 count = 0
-for row in range(label_row):  # ��
+for row in range(label_row):  
     for column in range(label_column):
         ground_xy_allData[count] = [row, column]
         count = count + 1
         if label_np[row][column] != 255:
-            ground_xy[int(label_np[row][column])].append([row, column])     # ��¼����ÿ������λ�ü���
-
-# ��ǩ�ڴ���
+            ground_xy[int(label_np[row][column])].append([row, column])     
 for categories in range(Categories_Number):
     ground_xy[categories] = np.array(ground_xy[categories])
     shuffle_array = np.arange(0, len(ground_xy[categories]), 1)
@@ -144,7 +143,7 @@ label_test = np.array(label_test)
 ground_xy_train = np.array(ground_xy_train)
 ground_xy_test = np.array(ground_xy_test)
 
-# ѵ��������������ݣ����ݼ��ڴ���
+
 shuffle_array = np.arange(0, len(label_test), 1)
 np.random.shuffle(shuffle_array)
 label_test = label_test[shuffle_array]
@@ -163,12 +162,12 @@ ground_xy_allData = torch.from_numpy(ground_xy_allData).type(torch.LongTensor)
 
 print('训练样本数：', len(label_train))
 print('测试样本数：', len(label_test))
-# ���ݹ�һ��
+
 ms4 = to_tensor(ms4_np)
 pan = to_tensor(pan_np)
-ms4 = np.array(ms4).transpose((2, 0, 1))  # ����ͨ��
+ms4 = np.array(ms4).transpose((2, 0, 1))  
 pan= np.array(pan).transpose((2, 0, 1))
-# ת������
+
 ms4 = torch.from_numpy(ms4).type(torch.FloatTensor)
 pan = torch.from_numpy(pan).type(torch.FloatTensor)
 label_fu,label_pan,label_ms=[],[],[]
@@ -185,7 +184,7 @@ class MyData(Dataset):
         self.cut_pan_size = cut_size
     def __getitem__(self, index):
         x_ms, y_ms = self.gt_xy[index]
-        x_pan = int( x_ms)      # ���㲻��������Ƭ�����н���
+        x_pan = int( x_ms)      
         y_pan = int( y_ms)
         image_ms = self.train_data1[:, x_ms:x_ms + self.cut_ms_size,
                    y_ms:y_ms + self.cut_ms_size]
@@ -208,7 +207,7 @@ class MyData1(Dataset):
 
     def __getitem__(self, index):
         x_ms, y_ms = self.gt_xy[index]
-        x_pan = int(x_ms)  # ���㲻��������Ƭ�����н���
+        x_pan = int(x_ms)  
         y_pan = int(y_ms)
         image_ms = self.train_data1[:, x_ms:x_ms + self.cut_ms_size,
                    y_ms:y_ms + self.cut_ms_size]
@@ -250,36 +249,7 @@ def train_model(model, train_loader, optimizer, epoch,epochs):
         optimizer.step()
         train_bar.desc=f"train epoch [{epoch}/{epochs}] loss={loss:.3f} loss2={loss2:.3f}"
     print("Train Accuracy: {:.6f}".format(correct * 100.0 / len(train_loader.dataset)))
-def test_model(model, test_loader):
-    model.eval()
-    correct = 0.0
-    test_bar=tqdm(test_loader)
-    test_metric=np.zeros([Categories_Number,Categories_Number])
-    with torch.no_grad():
-        for data, data1, target, _  in test_bar:
-            data, data1, target= data.cuda(), data1.cuda(), target.cuda()
-            output= model(data,data1)
-            test_loss = F.cross_entropy(output[0], target.long()).item()
-            pred = output[0].max(1, keepdim=True)[1]
-            for i in range(len(target)):
-                test_metric[int(pred[i].item())][int(target[i].item())]+=1
-            correct += pred.eq(target.view_as(pred).long()).sum().item()
-        print("test Accuracy:{:.3f} \n".format( 100.0 * correct / len(test_loader.dataset)))
-    b=np.sum(test_metric,axis=0)
-    accuracy=[]
-    c=0
-    for i in range(0,Categories_Number):
-        a=test_metric[i][i]/b[i]
-        accuracy.append(a)
-        c+=test_metric[i][i]
-        print('category {0:d}: {1:f}'.format(i,a))
-    average_accuracy = np.mean(accuracy)
-    overall_accuracy=c/np.sum(b,axis=0)
-    kappa_coefficient = kappa(test_metric, Categories_Number)
-    print('AA: {0:f}'.format(average_accuracy))
-    print('OA: {0:f}'.format(overall_accuracy))
-    print('KAPPA: {0:f}'.format(kappa_coefficient))
-    return 100.0 * correct / len(test_loader.dataset)
+
 test_losses=[]
 import time
 for epoch in range(1, EPOCH+1):
