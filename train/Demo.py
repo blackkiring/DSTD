@@ -260,4 +260,4 @@ for epoch in range(1, EPOCH+1):
         end = time.time()
         print('time:{0:f}'.format(end-start))
     scheduler.step()
-torch.save(model, '/home/gpu/Experiment/xl/model/model_Hu4.pkl')
+torch.save(model, 'model.pkl')
