@@ -13,7 +13,7 @@ from torch.nn import functional as F
 import os
 import torch.optim as optim
 from preprocess.preprocess import split
-from attention_new import ViTLite
+from model.attention_new import ViTLite
 import matplotlib.pyplot as plt
 import random
 from Loss import NCC
