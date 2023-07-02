@@ -73,34 +73,4 @@ def find_plzh(x):
             chk[i] = 1
             find_plzh(x+1)
             chk[i] = 0
-def get_label(msf,pan):
-    alpha=np.array([0.0532,0.000,0.9468,0.000])
-    beta=np.array( [0.000,0.1737,0.1573,0.6690])
-    gram = get_gram(msf, pan)
-    find_plzh(0)
 
-    nowmax  = 0
-    nowbest = ()
-    for pl in plzh:
-        nowsum = 0
-        for i in range(4):
-            nowsum+=gram[i][pl[i]]
-        if nowsum>nowmax:
-            nowmax  = nowsum
-            nowbest = pl
-
-    #panc = np.copy(pan)
-    pan[[0,1,2,3],:,:] = pan[nowbest,:,:]       #����˳��
-    beta[[0,1,2,3]] = beta[nowbest]   
-    I_m = alpha[0]*msf[0] + alpha[1]*msf[1] + alpha[2]*msf[2] + alpha[3]*msf[3]
-    I_p =  beta[0]*pan[0] +  beta[1]*pan[1] +  beta[2]*pan[2] +  beta[3]*pan[3]
-    I_mean = 0.5*(I_m+I_p)
-    mu  = torch.mean(I_mean)
-    gamma = sigmoid( (I_mean-mu)*( sign(I_m-I_p) ) )
-    label_fu = gamma*I_m + (1-gamma)*I_p
-    label_ms=msf[0]+msf[1]+msf[2]+msf[3]-label_fu
-    label_pan=pan[0]+pan[1]+pan[2]+pan[3]-label_fu
-    label_fu = ( label_fu - torch.min( label_fu)) / (torch.max( label_fu) - torch.min( label_fu))
-    label_ms=(label_ms-torch.min(label_ms))/(torch.max(label_ms)-torch.min(label_ms))
-    label_pan=(label_pan-torch.min(label_pan))/(torch.max(label_pan)-torch.min(label_pan))
-    return label_fu,label_ms,label_pan
