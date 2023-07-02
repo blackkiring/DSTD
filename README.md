@@ -6,6 +6,6 @@ Xidian University<br>
 <img width="960" alt="img" src="https://github.com/blackkiring/DSTD/assets/115865511/b586bbaa-852c-4d99-9f3f-b752065b5dba">   <br>
 
 ## Data
-PAN and MS images (Inconvenient to provide)
+PAN and MS images (Inconvenient to provide)   <br>
 groundtruth file
 
