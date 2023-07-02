@@ -12,7 +12,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.nn import functional as F
 import os
 import torch.optim as optim
-from preprocess import split
+from preprocess.preprocess import split
 from attention_new import ViTLite
 import matplotlib.pyplot as plt
 import random
