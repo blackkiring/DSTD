@@ -1,4 +1,4 @@
-from preprocess import *
+from preprocess.preprocess import *
 model = ViTLite(img_size=Ms4_patch_size,num_heads=2, mlp_ratio=1, embedding_dim=64, positional_embedding='learnable', num_classes=11).cuda()
 optimizer = optim.Adam(model.parameters(), lr=LR)
 scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[15], gamma=0.1)
