@@ -7,5 +7,7 @@ Xidian University<br>
 
 ## Data
 PAN and MS images (Inconvenient to provide)   <br>
-groundtruth file
+groundtruth file <br>
+## Preprocessing
+We provide preprocess.py to process our input PAN and MS images. You can change the dataset and the size of images in the preprocess.py. Furthermore, you need to change the number of categries. 
 
