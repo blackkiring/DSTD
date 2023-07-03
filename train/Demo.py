@@ -25,10 +25,5 @@ test_losses=[]
 import time
 for epoch in range(1, EPOCH+1):
     train_model(model,  train_loader, optimizer, epoch,EPOCH)
-    if epoch==EPOCH:
-        start = time.time()
-        test_loss=test_model(model,  test_loader)
-        end = time.time()
-        print('time:{0:f}'.format(end-start))
     scheduler.step()
 torch.save(model, 'model.pkl')
