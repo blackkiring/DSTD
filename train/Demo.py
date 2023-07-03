@@ -172,12 +172,9 @@ ms4 = torch.from_numpy(ms4).type(torch.FloatTensor)
 pan = torch.from_numpy(pan).type(torch.FloatTensor)
 label_fu,label_pan,label_ms=[],[],[]
 class MyData(Dataset):
-    def __init__(self, MS4, Pan, Label,Label_fu,Label_pan,Label_ms, xy, cut_size):
+    def __init__(self, MS4, Pan, Label, xy, cut_size):
         self.train_data1 = MS4
         self.train_data2 = Pan
-        self.train_label1=Label_ms
-        self.train_label2=Label_pan
-        self.train_label3=Label_fu
         self.train_labels = Label
         self.gt_xy = xy
         self.cut_ms_size = cut_size
@@ -221,8 +218,8 @@ class MyData1(Dataset):
     def __len__(self):
         return len(self.gt_xy)
 
-train_data = MyData(ms4, pan, label_train,label_fu,label_pan,label_ms ,ground_xy_train, Ms4_patch_size)
-test_data = MyData(ms4, pan, label_test,label_fu,label_pan,label_ms ,ground_xy_test, Ms4_patch_size)
+train_data = MyData(ms4, pan, label_train,ground_xy_train, Ms4_patch_size)
+test_data = MyData(ms4, pan, label_test ,ground_xy_test, Ms4_patch_size)
 all_data = MyData1(ms4, pan, ground_xy_allData, Ms4_patch_size)
 train_loader = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
 test_loader = DataLoader(dataset=test_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
