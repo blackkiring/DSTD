@@ -9,5 +9,11 @@ Xidian University<br>
 PAN and MS images (Inconvenient to provide)   <br>
 groundtruth file <br>
 ## Preprocessing
-We provide preprocess.py to process our input PAN and MS images. You can change the dataset and the size of images in the preprocess.py. Furthermore, you need to change the number of categries. 
+We provide preprocess.py to process our input PAN and MS images. You can change the dataset and the size of images in the preprocess.py. Furthermore, you need to change the number of categries according to different dataset. The majority paragrams you can set them in preprocess.py.
+
+## train
+our model is an end-to-end network. To train our network, you only need to run the Demo.py. We set hyper-parameters according to the best performance in the experiments of our net work.
+## visualize
+Since different datasets have different classification, we provide different visualize code for different datasets. You can change them if you need. The output are the classification
+maps, including the image with ground truth and the overall image.
 
