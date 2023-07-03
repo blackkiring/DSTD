@@ -3,28 +3,31 @@ def test_model(model, test_loader):
     model.eval()
     correct = 0.0
     test_bar=tqdm(test_loader)
-    y_true=[]
-    y_pre=[]
+    test_metric=np.zeros([Categories_Number,Categories_Number])
     with torch.no_grad():
         for data, data1, target, _  in test_bar:
             data, data1, target= data.cuda(), data1.cuda(), target.cuda()
-            y_true=y_true+target.cpu().numpy().tolist()
             output= model(data,data1)
             test_loss = F.cross_entropy(output[0], target.long()).item()
             pred = output[0].max(1, keepdim=True)[1]
-            y_pre=y_pre+pred.cpu().numpy().tolist()
+            for i in range(len(target)):
+                test_metric[int(pred[i].item())][int(target[i].item())]+=1
             correct += pred.eq(target.view_as(pred).long()).sum().item()
         print("test Accuracy:{:.3f} \n".format( 100.0 * correct / len(test_loader.dataset)))
-        confusion_matrix = metrics.confusion_matrix(y_true, y_pre)
-        overall_accuracy = metrics.accuracy_score(y_true, y_pre)
-        acc_for_each_class = metrics.precision_score(y_true, y_pre, average=None)
-        for i in range(0,Categories_Number):
-            print('category {0:d}: {1:f}'.format(i,acc_for_each_class[i]))
-        average_accuracy = np.mean(acc_for_each_class)
-        kappa_coefficient = kappa(confusion_matrix, 11)
-        print('AA: {0:f}'.format(average_accuracy))
-        print('OA: {0:f}'.format(overall_accuracy))
-        print('KAPPA: {0:f}'.format(kappa_coefficient))
+    b=np.sum(test_metric,axis=0)
+    accuracy=[]
+    c=0
+    for i in range(0,Categories_Number):
+        a=test_metric[i][i]/b[i]
+        accuracy.append(a)
+        c+=test_metric[i][i]
+        print('category {0:d}: {1:f}'.format(i,a))
+    average_accuracy = np.mean(accuracy)
+    overall_accuracy=c/np.sum(b,axis=0)
+    kappa_coefficient = kappa(test_metric, Categories_Number)
+    print('AA: {0:f}'.format(average_accuracy))
+    print('OA: {0:f}'.format(overall_accuracy))
+    print('KAPPA: {0:f}'.format(kappa_coefficient))
     return 100.0 * correct / len(test_loader.dataset)
 def kappa(confusion_matrix, k):
     dataMat = np.mat(confusion_matrix)
